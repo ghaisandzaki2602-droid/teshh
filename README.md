@@ -143,11 +143,9 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
                     <input type="text" id="tx-desc" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800" placeholder="Cth: Uang saku, Makan siang">
                 </div>
-                <!-- Input Foto Bukti + Pratinjau -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Foto / Screenshot (Opsional)</label>
                     <input type="file" id="tx-photo" accept="image/*" onchange="previewFile(this, 'tx-preview')" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                    <!-- Area Pratinjau Foto -->
                     <img id="tx-preview" class="hidden mt-3 w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm" alt="Preview" />
                 </div>
                 <div class="mb-6">
@@ -185,7 +183,6 @@
                         <input type="number" id="tg-amount" required min="1" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-lg font-semibold text-gray-800" placeholder="0">
                     </div>
                 </div>
-                <!-- Input Foto Target + Pratinjau -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Foto / Screenshot (Opsional)</label>
                     <input type="file" id="tg-photo" accept="image/*" onchange="previewFile(this, 'tg-preview')" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
@@ -335,7 +332,6 @@
         });
     }
 
-    // Fitur Pratinjau Foto
     window.previewFile = (input, previewId) => {
         const preview = document.getElementById(previewId);
         const file = input.files[0];
@@ -352,7 +348,6 @@
         }
     };
 
-    // Fitur Menangkap Screenshot melalui Paste/Tempel Clipboard
     document.addEventListener('paste', (e) => {
         const items = (e.clipboardData || e.originalEvent.clipboardData).items;
         for (let index in items) {
@@ -401,7 +396,6 @@
             document.getElementById('target-form').reset();
             document.getElementById('tx-date').valueAsDate = new Date();
             
-            // Hapus gambar pratinjau saat form ditutup
             document.getElementById('tx-preview').classList.add('hidden');
             document.getElementById('tx-preview').src = "";
             document.getElementById('tg-preview').classList.add('hidden');
