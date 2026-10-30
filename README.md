@@ -143,9 +143,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
                     <input type="text" id="tx-desc" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800" placeholder="Cth: Uang saku, Makan siang">
                 </div>
+                <!-- Input Foto Bukti + Pratinjau -->
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Bukti (Opsional)</label>
-                    <input type="file" id="tx-photo" accept="image/*" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto / Screenshot (Opsional)</label>
+                    <input type="file" id="tx-photo" accept="image/*" onchange="previewFile(this, 'tx-preview')" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                    <!-- Area Pratinjau Foto -->
+                    <img id="tx-preview" class="hidden mt-3 w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm" alt="Preview" />
                 </div>
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
@@ -158,7 +161,7 @@
         </div>
     </div>
 
-    <!-- Modal Target (Dengan Foto) -->
+    <!-- Modal Target -->
     <div id="target-modal" class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white rounded-t-3xl z-50 hidden flex-col shadow-2xl">
         <div class="p-6 overflow-y-auto max-h-[85vh]">
             <div class="flex justify-between items-center mb-6">
@@ -182,10 +185,11 @@
                         <input type="number" id="tg-amount" required min="1" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-lg font-semibold text-gray-800" placeholder="0">
                     </div>
                 </div>
-                <!-- Input Foto Target Baru -->
+                <!-- Input Foto Target + Pratinjau -->
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Target (Opsional)</label>
-                    <input type="file" id="tg-photo" accept="image/*" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto / Screenshot (Opsional)</label>
+                    <input type="file" id="tg-photo" accept="image/*" onchange="previewFile(this, 'tg-preview')" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
+                    <img id="tg-preview" class="hidden mt-3 w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm" alt="Preview" />
                 </div>
                 <button type="submit" id="submit-target-btn" class="w-full bg-gray-800 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center">
                     <span>Mulai Menabung</span>
@@ -255,8 +259,6 @@
 
         let progress = Math.max(0, Math.min((currentBalance / targetData.amount) * 100, 100));
         let isReached = currentBalance >= targetData.amount;
-        
-        // Tampilkan foto kecil (thumbnail) jika ada foto
         let photoHtml = targetData.photo ? `<img src="${targetData.photo}" class="w-12 h-12 rounded-xl object-cover border border-gray-200 mr-3 flex-shrink-0">` : '';
 
         container.innerHTML = `
@@ -298,7 +300,6 @@
             const iconBg = isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600';
             const iconName = isIncome ? 'fa-arrow-down' : 'fa-arrow-up';
             const amountColor = isIncome ? 'text-emerald-500' : 'text-gray-800';
-            
             let photoHtml = tx.photo ? `<img src="${tx.photo}" class="mt-3 rounded-lg w-full max-h-32 object-cover border border-gray-200">` : '';
 
             const item = document.createElement('div');
@@ -334,6 +335,48 @@
         });
     }
 
+    // Fitur Pratinjau Foto
+    window.previewFile = (input, previewId) => {
+        const preview = document.getElementById(previewId);
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = "";
+            preview.classList.add('hidden');
+        }
+    };
+
+    // Fitur Menangkap Screenshot melalui Paste/Tempel Clipboard
+    document.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let index in items) {
+            const item = items[index];
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+                const blob = item.getAsFile();
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(blob);
+                
+                if (!document.getElementById('transaction-modal').classList.contains('hidden')) {
+                    const input = document.getElementById('tx-photo');
+                    input.files = dataTransfer.files;
+                    previewFile(input, 'tx-preview');
+                    showToast("Screenshot berhasil ditempel!", "success");
+                } else if (!document.getElementById('target-modal').classList.contains('hidden')) {
+                    const input = document.getElementById('tg-photo');
+                    input.files = dataTransfer.files;
+                    previewFile(input, 'tg-preview');
+                    showToast("Screenshot berhasil ditempel!", "success");
+                }
+            }
+        }
+    });
+
     window.openModal = () => showPopup('transaction-modal');
     window.openTargetModal = () => showPopup('target-modal');
     
@@ -357,12 +400,15 @@
             document.getElementById('transaction-form').reset();
             document.getElementById('target-form').reset();
             document.getElementById('tx-date').valueAsDate = new Date();
-            document.getElementById('tx-photo').value = ''; 
-            document.getElementById('tg-photo').value = ''; 
+            
+            // Hapus gambar pratinjau saat form ditutup
+            document.getElementById('tx-preview').classList.add('hidden');
+            document.getElementById('tx-preview').src = "";
+            document.getElementById('tg-preview').classList.add('hidden');
+            document.getElementById('tg-preview').src = "";
         }, 300);
     };
 
-    // Fungsi pembantu kompresi gambar
     const compressImage = (file, callback) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -378,7 +424,7 @@
                 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                callback(canvas.toDataURL('image/jpeg', 0.6));
+                callback(canvas.toDataURL('image/jpeg', 0.7));
             };
         };
     };
@@ -452,8 +498,6 @@
 
     window.completeTarget = () => {
         if(!targetData) return;
-        
-        // Memindahkan foto target menjadi foto bukti pengeluaran
         try {
             transactions.push({
                 id: Date.now().toString(), type: 'expense', amount: targetData.amount,
