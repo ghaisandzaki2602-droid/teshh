@@ -9,8 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        .app-container { max-width: 480px; margin: 0 auto; background-color: #ffffff; min-height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-x: hidden;}
-        /* Hide scrollbar for clean mobile look */
+        .app-container { max-width: 480px; margin: 0 auto; background-color: #f9fafb; min-height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow-x: hidden;}
         ::-webkit-scrollbar { width: 0px; background: transparent; }
         .modal-enter { animation: slideUp 0.3s ease-out forwards; }
         .modal-exit { animation: slideDown 0.3s ease-in forwards; }
@@ -25,7 +24,7 @@
 
 <div class="app-container">
     <!-- Header -->
-    <header class="pt-8 pb-4 px-6 bg-white sticky top-0 z-10">
+    <header class="pt-8 pb-4 px-6 bg-f9fafb sticky top-0 z-10">
         <div class="flex justify-between items-center">
             <div>
                 <h1 class="text-2xl font-bold text-gray-800">Keuanganku</h1>
@@ -40,7 +39,6 @@
     <!-- Dashboard -->
     <section class="px-6 py-2">
         <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
-            <!-- Decorative circles -->
             <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
             <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-indigo-500 opacity-20 blur-xl"></div>
             
@@ -70,6 +68,12 @@
         </div>
     </section>
 
+    <!-- Target Section -->
+    <section class="px-6 mt-2 mb-1">
+        <div id="target-container" class="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 relative overflow-hidden transition-all duration-300">
+        </div>
+    </section>
+
     <!-- Transaction History -->
     <section class="flex-1 px-6 py-4 flex flex-col min-h-[300px]">
         <div class="flex justify-between items-end mb-4">
@@ -77,13 +81,11 @@
             <span class="text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-1 rounded-md" id="transaction-count">0 Transaksi</span>
         </div>
         
-        <!-- Loading State -->
         <div id="loading-state" class="flex-1 flex flex-col items-center justify-center text-gray-400">
             <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-indigo-500"></i>
             <p class="text-sm">Menyinkronkan data...</p>
         </div>
 
-        <!-- Empty State -->
         <div id="empty-state" class="hidden flex-1 flex-col items-center justify-center text-gray-400">
             <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                 <i class="fa-solid fa-receipt text-2xl text-gray-300"></i>
@@ -91,9 +93,7 @@
             <p class="text-sm">Belum ada transaksi.</p>
         </div>
 
-        <!-- List -->
         <div id="transaction-list" class="flex flex-col gap-3 pb-24 hidden">
-            <!-- Items will be injected here via JS -->
         </div>
     </section>
 
@@ -102,19 +102,20 @@
         <i class="fa-solid fa-plus text-xl"></i>
     </button>
 
-    <!-- Add Transaction Modal -->
-    <div id="modal-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden backdrop-blur-sm transition-opacity" onclick="closeModal()"></div>
+    <!-- Backdrop untuk semua Modal -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-black/60 z-40 hidden backdrop-blur-sm transition-opacity" onclick="closeAllModals()"></div>
+    
+    <!-- Modal Transaksi -->
     <div id="transaction-modal" class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white rounded-t-3xl z-50 hidden flex-col shadow-2xl">
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto max-h-[85vh]">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-gray-800">Tambah Transaksi</h3>
-                <button onclick="closeModal()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             
             <form id="transaction-form" onsubmit="handleFormSubmit(event)">
-                <!-- Type Selection -->
                 <div class="flex gap-4 mb-5">
                     <label class="flex-1 relative">
                         <input type="radio" name="type" value="income" class="peer sr-only" checked>
@@ -129,8 +130,6 @@
                         </div>
                     </label>
                 </div>
-
-                <!-- Amount -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Uang (Rp)</label>
                     <div class="relative">
@@ -140,27 +139,62 @@
                         <input type="number" id="tx-amount" required min="1" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-lg font-semibold text-gray-800" placeholder="0">
                     </div>
                 </div>
-
-                <!-- Description -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                    <input type="text" id="tx-desc" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800" placeholder="Cth: Gaji, Makan siang, dll">
+                    <input type="text" id="tx-desc" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800" placeholder="Cth: Uang saku, Makan siang">
                 </div>
-
-                <!-- Date -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Bukti (Opsional)</label>
+                    <input type="file" id="tx-photo" accept="image/*" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
                     <input type="date" id="tx-date" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800">
                 </div>
-
                 <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex justify-center items-center">
                     <span>Simpan Transaksi</span>
                 </button>
             </form>
         </div>
     </div>
+
+    <!-- Modal Target (Dengan Foto) -->
+    <div id="target-modal" class="fixed bottom-0 left-0 right-0 max-w-[480px] mx-auto bg-white rounded-t-3xl z-50 hidden flex-col shadow-2xl">
+        <div class="p-6 overflow-y-auto max-h-[85vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Buat Target</h3>
+                <button onclick="closeAllModals()" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <form id="target-form" onsubmit="handleTargetSubmit(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Target</label>
+                    <input type="text" id="tg-name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800" placeholder="Cth: Beli Sepatu Baru">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nominal Target (Rp)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <span class="text-gray-500 font-medium">Rp</span>
+                        </div>
+                        <input type="number" id="tg-amount" required min="1" class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-lg font-semibold text-gray-800" placeholder="0">
+                    </div>
+                </div>
+                <!-- Input Foto Target Baru -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto Target (Opsional)</label>
+                    <input type="file" id="tg-photo" accept="image/*" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-200 file:text-gray-700 hover:file:bg-gray-300">
+                </div>
+                <button type="submit" id="submit-target-btn" class="w-full bg-gray-800 hover:bg-black text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center">
+                    <span>Mulai Menabung</span>
+                </button>
+            </form>
+        </div>
+    </div>
     
-    <!-- Custom Toast Notification -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-3 hidden max-w-[90%] w-max">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toast-msg" class="text-sm font-medium">Pesan</span>
@@ -168,166 +202,189 @@
 </div>
 
 <script>
-    // Inisialisasi Data dari LocalStorage
     let transactions = JSON.parse(localStorage.getItem('keuanganku_premium_data')) || [];
+    let targetData = JSON.parse(localStorage.getItem('keuanganku_target_data')) || null;
+    let currentBalance = 0;
     
-    // Formatting utils
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
-    };
+    const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    const formatDateStr = (dateString) => new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-    const formatDateStr = (dateString) => {
-        const options = { day: 'numeric', month: 'short', year: 'numeric' };
-        return new Date(dateString).toLocaleDateString('id-ID', options);
-    };
-
-    // UI Setup
     document.addEventListener('DOMContentLoaded', () => {
-        // Set header date
-        const todayOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-        document.getElementById('current-date-header').textContent = new Date().toLocaleDateString('id-ID', todayOptions);
-        
-        // Set default date in form to today
+        document.getElementById('current-date-header').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
         document.getElementById('tx-date').valueAsDate = new Date();
-
-        // Mulai memuat data
         loadData();
     });
 
-    // Memuat Data dan Merender
     function loadData() {
-        // Sort in memory (newest first based on timestamp)
         transactions.sort((a, b) => b.timestamp - a.timestamp);
-        
         updateDashboard();
+        renderTarget();
         renderTransactionList();
-        
-        // Hide loading state
         document.getElementById('loading-state').classList.add('hidden');
     }
 
-    // Update Dashboard Totals
     function updateDashboard() {
         let totalIncome = 0;
         let totalExpense = 0;
-
         transactions.forEach(tx => {
-            if (tx.type === 'income') {
-                totalIncome += tx.amount;
-            } else if (tx.type === 'expense') {
-                totalExpense += tx.amount;
-            }
+            if (tx.type === 'income') totalIncome += tx.amount;
+            else if (tx.type === 'expense') totalExpense += tx.amount;
         });
+        currentBalance = totalIncome - totalExpense;
 
-        const balance = totalIncome - totalExpense;
-
-        document.getElementById('total-balance').textContent = formatCurrency(balance);
+        document.getElementById('total-balance').textContent = formatCurrency(currentBalance);
         document.getElementById('total-income').textContent = formatCurrency(totalIncome);
         document.getElementById('total-expense').textContent = formatCurrency(totalExpense);
-        
-        // Update count
         document.getElementById('transaction-count').textContent = `${transactions.length} Transaksi`;
     }
 
-    // Render List
-    function renderTransactionList() {
-        const listEl = document.getElementById('transaction-list');
-        const emptyState = document.getElementById('empty-state');
-        
-        listEl.innerHTML = '';
-        
-        if (transactions.length === 0) {
-            emptyState.classList.remove('hidden');
-            emptyState.classList.add('flex');
-            listEl.classList.add('hidden');
+    function renderTarget() {
+        const container = document.getElementById('target-container');
+        if (!targetData) {
+            container.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-sm">Target Impian</h4>
+                        <p class="text-xs text-gray-400 mt-0.5">Belum ada target diatur</p>
+                    </div>
+                    <button onclick="openTargetModal()" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-200 transition-colors">Buat Target</button>
+                </div>
+            `;
             return;
         }
 
-        emptyState.classList.add('hidden');
-        emptyState.classList.remove('flex');
+        let progress = Math.max(0, Math.min((currentBalance / targetData.amount) * 100, 100));
+        let isReached = currentBalance >= targetData.amount;
+        
+        // Tampilkan foto kecil (thumbnail) jika ada foto
+        let photoHtml = targetData.photo ? `<img src="${targetData.photo}" class="w-12 h-12 rounded-xl object-cover border border-gray-200 mr-3 flex-shrink-0">` : '';
+
+        container.innerHTML = `
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center pr-2 overflow-hidden">
+                    ${photoHtml}
+                    <div class="min-w-0">
+                        <h4 class="font-bold text-gray-800 text-sm truncate">${targetData.name}</h4>
+                        <p class="text-[11px] text-gray-500 font-medium mt-0.5">${formatCurrency(currentBalance)} / ${formatCurrency(targetData.amount)}</p>
+                    </div>
+                </div>
+                ${isReached 
+                    ? `<button onclick="completeTarget()" class="bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md shadow-emerald-500/30 animate-pulse whitespace-nowrap ml-2">Selesai !</button>`
+                    : `<button onclick="deleteTarget()" class="text-rose-400 text-xs p-1.5 rounded-md hover:bg-rose-50 flex-shrink-0 ml-2"><i class="fa-solid fa-trash"></i></button>`
+                }
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-2 mb-1.5 overflow-hidden">
+                <div class="h-2 rounded-full transition-all duration-700 ease-out ${isReached ? 'bg-emerald-400' : 'bg-indigo-500'}" style="width: ${progress}%"></div>
+            </div>
+            <p class="text-right text-[10px] font-bold ${isReached ? 'text-emerald-500' : 'text-indigo-600'}">${progress.toFixed(1)}% Tercapai</p>
+        `;
+    }
+
+    function renderTransactionList() {
+        const listEl = document.getElementById('transaction-list');
+        const emptyState = document.getElementById('empty-state');
+        listEl.innerHTML = '';
+        
+        if (transactions.length === 0) {
+            emptyState.classList.remove('hidden'); emptyState.classList.add('flex');
+            listEl.classList.add('hidden'); return;
+        }
+
+        emptyState.classList.add('hidden'); emptyState.classList.remove('flex');
         listEl.classList.remove('hidden');
 
         transactions.forEach(tx => {
             const isIncome = tx.type === 'income';
-            
             const iconBg = isIncome ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600';
             const iconName = isIncome ? 'fa-arrow-down' : 'fa-arrow-up';
             const amountColor = isIncome ? 'text-emerald-500' : 'text-gray-800';
-            const sign = isIncome ? '+' : '-';
+            
+            let photoHtml = tx.photo ? `<img src="${tx.photo}" class="mt-3 rounded-lg w-full max-h-32 object-cover border border-gray-200">` : '';
 
             const item = document.createElement('div');
             item.className = 'bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group';
             item.innerHTML = `
-                <div class="flex items-center gap-4 z-10 w-full bg-white transition-transform duration-300">
-                    <div class="w-12 h-12 rounded-full ${iconBg} flex items-center justify-center shrink-0">
+                <div class="flex items-start gap-4 z-10 w-full bg-white transition-transform duration-300">
+                    <div class="w-12 h-12 rounded-full ${iconBg} flex items-center justify-center shrink-0 mt-1">
                         <i class="fa-solid ${iconName} text-lg"></i>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-gray-800 truncate">${tx.description}</h4>
+                        <h4 class="font-semibold text-gray-800">${tx.description}</h4>
                         <p class="text-xs text-gray-400 mt-0.5">${formatDateStr(tx.date)}</p>
+                        ${photoHtml}
                     </div>
-                    <div class="text-right shrink-0">
-                        <p class="font-bold ${amountColor}">${sign} ${formatCurrency(tx.amount)}</p>
+                    <div class="text-right shrink-0 mt-1">
+                        <p class="font-bold ${amountColor}">${isIncome ? '+' : '-'} ${formatCurrency(tx.amount)}</p>
                     </div>
                 </div>
-                <!-- Delete Action -->
-                <button onclick="window.deleteTransaction('${tx.id}')" class="absolute right-0 top-0 bottom-0 w-16 bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-0" aria-label="Hapus">
+                <button onclick="window.deleteTransaction('${tx.id}')" class="absolute right-0 top-0 bottom-0 w-16 bg-rose-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-0">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             `;
             
-            // Add simple swipe logic for mobile
-            let touchStartX = 0;
-            const fgElement = item.firstElementChild;
-            
+            let touchStartX = 0; const fgElement = item.firstElementChild;
             fgElement.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
             fgElement.addEventListener('touchend', e => {
                 const touchEndX = e.changedTouches[0].screenX;
-                if (touchStartX - touchEndX > 50) { // Swiped left
-                    fgElement.style.transform = 'translateX(-64px)';
-                } else if (touchEndX - touchStartX > 50) { // Swiped right
-                    fgElement.style.transform = 'translateX(0)';
-                }
+                if (touchStartX - touchEndX > 50) fgElement.style.transform = 'translateX(-64px)';
+                else if (touchEndX - touchStartX > 50) fgElement.style.transform = 'translateX(0)';
             }, {passive: true});
 
             listEl.appendChild(item);
         });
     }
 
-    // Modal Control logic
-    window.openModal = () => {
-        const modal = document.getElementById('transaction-modal');
-        const backdrop = document.getElementById('modal-backdrop');
-        
-        backdrop.classList.remove('hidden');
-        modal.classList.remove('hidden');
-        
-        // Small delay to ensure display:block applies before animation
-        setTimeout(() => {
-            modal.classList.add('modal-enter');
-            modal.classList.remove('modal-exit');
-        }, 10);
-    };
+    window.openModal = () => showPopup('transaction-modal');
+    window.openTargetModal = () => showPopup('target-modal');
+    
+    function showPopup(modalId) {
+        document.getElementById('modal-backdrop').classList.remove('hidden');
+        const m = document.getElementById(modalId);
+        m.classList.remove('hidden');
+        setTimeout(() => { m.classList.add('modal-enter'); m.classList.remove('modal-exit'); }, 10);
+    }
 
-    window.closeModal = () => {
-        const modal = document.getElementById('transaction-modal');
-        const backdrop = document.getElementById('modal-backdrop');
-        
-        modal.classList.remove('modal-enter');
-        modal.classList.add('modal-exit');
-        
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            backdrop.classList.add('hidden');
+    window.closeAllModals = () => {
+        ['transaction-modal', 'target-modal'].forEach(id => {
+            const m = document.getElementById(id);
+            if(!m.classList.contains('hidden')){
+                m.classList.remove('modal-enter'); m.classList.add('modal-exit');
+                setTimeout(() => { m.classList.add('hidden'); }, 300);
+            }
+        });
+        document.getElementById('modal-backdrop').classList.add('hidden');
+        setTimeout(() => { 
             document.getElementById('transaction-form').reset();
-            document.getElementById('tx-date').valueAsDate = new Date(); // Reset date to today
-        }, 300); // match animation duration
+            document.getElementById('target-form').reset();
+            document.getElementById('tx-date').valueAsDate = new Date();
+            document.getElementById('tx-photo').value = ''; 
+            document.getElementById('tg-photo').value = ''; 
+        }, 300);
     };
 
-    // Form Submission
+    // Fungsi pembantu kompresi gambar
+    const compressImage = (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 300;
+                const scaleSize = MAX_WIDTH / img.width;
+                canvas.width = MAX_WIDTH;
+                canvas.height = img.height * scaleSize;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                callback(canvas.toDataURL('image/jpeg', 0.6));
+            };
+        };
+    };
+
     window.handleFormSubmit = (e) => {
         e.preventDefault();
-
         const btn = document.getElementById('submit-btn');
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Menyimpan...`;
@@ -336,66 +393,97 @@
         const amount = parseFloat(document.getElementById('tx-amount').value);
         const description = document.getElementById('tx-desc').value.trim();
         const dateStr = document.getElementById('tx-date').value;
+        const photoFile = document.getElementById('tx-photo').files[0];
         
-        // Use exact timestamp + string date for robust sorting/display
         const selectedDate = new Date(dateStr);
-        // Set to current time today if selected date is today, else use midnight
         const isToday = selectedDate.toDateString() === new Date().toDateString();
-        const timestamp = isToday ? Date.now() : selectedDate.getTime();
 
-        const txData = {
-            id: Date.now().toString(), // Generate Unique ID
-            type,
-            amount,
-            description,
-            date: dateStr,
-            timestamp: timestamp,
-            createdAt: Date.now()
+        const saveTransaction = (photoBase64) => {
+            try {
+                transactions.push({
+                    id: Date.now().toString(), type, amount, description, date: dateStr,
+                    timestamp: isToday ? Date.now() : selectedDate.getTime(), createdAt: Date.now(),
+                    photo: photoBase64
+                });
+                
+                localStorage.setItem('keuanganku_premium_data', JSON.stringify(transactions));
+                loadData(); showToast("Transaksi disimpan!", "success"); closeAllModals();
+            } catch (err) {
+                alert("Gagal menyimpan! Memori lokal penuh. Hapus beberapa transaksi lama.");
+            }
+            btn.disabled = false; btn.innerHTML = `<span>Simpan Transaksi</span>`;
         };
 
-        // Simpan ke LocalStorage
-        transactions.push(txData);
-        localStorage.setItem('keuanganku_premium_data', JSON.stringify(transactions));
-        
-        loadData();
-        showToast("Transaksi berhasil disimpan!", "success");
-        closeModal();
-        
-        btn.disabled = false;
-        btn.innerHTML = `<span>Simpan Transaksi</span>`;
+        if (photoFile) compressImage(photoFile, saveTransaction);
+        else saveTransaction(null);
     };
 
-    // Delete Transaction
+    window.handleTargetSubmit = (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submit-target-btn');
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Memproses...`;
+
+        const name = document.getElementById('tg-name').value.trim();
+        const amount = parseFloat(document.getElementById('tg-amount').value);
+        const photoFile = document.getElementById('tg-photo').files[0];
+
+        const saveTarget = (photoBase64) => {
+            try {
+                targetData = { name, amount, photo: photoBase64 };
+                localStorage.setItem('keuanganku_target_data', JSON.stringify(targetData));
+                renderTarget(); showToast("Target tabungan berhasil dibuat!", "success"); closeAllModals();
+            } catch(err) {
+                alert("Gagal menyimpan target! Memori lokal penuh.");
+            }
+            btn.disabled = false; btn.innerHTML = `<span>Mulai Menabung</span>`;
+        };
+
+        if (photoFile) compressImage(photoFile, saveTarget);
+        else saveTarget(null);
+    };
+
+    window.deleteTarget = () => {
+        if(confirm("Hapus target ini?")) {
+            targetData = null; localStorage.removeItem('keuanganku_target_data');
+            renderTarget(); showToast("Target dibatalkan", "success");
+        }
+    };
+
+    window.completeTarget = () => {
+        if(!targetData) return;
+        
+        // Memindahkan foto target menjadi foto bukti pengeluaran
+        try {
+            transactions.push({
+                id: Date.now().toString(), type: 'expense', amount: targetData.amount,
+                description: 'Target Tercapai: ' + targetData.name, date: new Date().toISOString().split('T')[0],
+                timestamp: Date.now(), createdAt: Date.now(), 
+                photo: targetData.photo || null
+            });
+            localStorage.setItem('keuanganku_premium_data', JSON.stringify(transactions));
+            targetData = null; localStorage.removeItem('keuanganku_target_data');
+            loadData(); showToast("Target tercapai dan dicatat sebagai pengeluaran.", "success");
+        } catch(err) {
+            alert("Gagal mencatat penyelesaian target karena memori penuh.");
+        }
+    };
+
     window.deleteTransaction = (docId) => {
         transactions = transactions.filter(tx => tx.id !== docId);
         localStorage.setItem('keuanganku_premium_data', JSON.stringify(transactions));
-        loadData();
-        showToast("Transaksi dihapus", "success");
+        loadData(); showToast("Transaksi dihapus", "success");
     };
 
-    // Toast Notification logic (Replaces alert())
     function showToast(message, type = "success") {
         const toast = document.getElementById('toast');
         const icon = document.getElementById('toast-icon');
         document.getElementById('toast-msg').textContent = message;
-        
-        if (type === "success") {
-            icon.className = "fa-solid fa-circle-check text-emerald-400";
-        } else {
-            icon.className = "fa-solid fa-circle-exclamation text-rose-400";
-        }
-
-        toast.classList.remove('hidden');
-        toast.classList.add('toast-enter');
-        
+        icon.className = type === "success" ? "fa-solid fa-circle-check text-emerald-400" : "fa-solid fa-circle-exclamation text-rose-400";
+        toast.classList.remove('hidden'); toast.classList.add('toast-enter');
         setTimeout(() => {
-            toast.classList.remove('toast-enter');
-            toast.style.opacity = '0';
-            setTimeout(() => {
-                toast.classList.add('hidden');
-                toast.style.opacity = '1';
-                toast.style.transform = '';
-            }, 300);
+            toast.classList.remove('toast-enter'); toast.style.opacity = '0';
+            setTimeout(() => { toast.classList.add('hidden'); toast.style.opacity = '1'; toast.style.transform = ''; }, 300);
         }, 3000);
     }
 </script>
