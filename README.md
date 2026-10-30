@@ -143,11 +143,6 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
                     <input type="text" id="tx-desc" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800" placeholder="Cth: Uang saku, Makan siang">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto / Screenshot (Opsional)</label>
-                    <input type="file" id="tx-photo" accept="image/*" onchange="previewFile(this, 'tx-preview')" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                    <img id="tx-preview" class="hidden mt-3 w-full h-32 object-cover rounded-xl border border-gray-200 shadow-sm" alt="Preview" />
-                </div>
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
                     <input type="date" id="tx-date" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-800">
@@ -357,12 +352,7 @@
                 const dataTransfer = new DataTransfer();
                 dataTransfer.items.add(blob);
                 
-                if (!document.getElementById('transaction-modal').classList.contains('hidden')) {
-                    const input = document.getElementById('tx-photo');
-                    input.files = dataTransfer.files;
-                    previewFile(input, 'tx-preview');
-                    showToast("Screenshot berhasil ditempel!", "success");
-                } else if (!document.getElementById('target-modal').classList.contains('hidden')) {
+                if (!document.getElementById('target-modal').classList.contains('hidden')) {
                     const input = document.getElementById('tg-photo');
                     input.files = dataTransfer.files;
                     previewFile(input, 'tg-preview');
@@ -396,8 +386,6 @@
             document.getElementById('target-form').reset();
             document.getElementById('tx-date').valueAsDate = new Date();
             
-            document.getElementById('tx-preview').classList.add('hidden');
-            document.getElementById('tx-preview').src = "";
             document.getElementById('tg-preview').classList.add('hidden');
             document.getElementById('tg-preview').src = "";
         }, 300);
@@ -433,29 +421,23 @@
         const amount = parseFloat(document.getElementById('tx-amount').value);
         const description = document.getElementById('tx-desc').value.trim();
         const dateStr = document.getElementById('tx-date').value;
-        const photoFile = document.getElementById('tx-photo').files[0];
         
         const selectedDate = new Date(dateStr);
         const isToday = selectedDate.toDateString() === new Date().toDateString();
 
-        const saveTransaction = (photoBase64) => {
-            try {
-                transactions.push({
-                    id: Date.now().toString(), type, amount, description, date: dateStr,
-                    timestamp: isToday ? Date.now() : selectedDate.getTime(), createdAt: Date.now(),
-                    photo: photoBase64
-                });
-                
-                localStorage.setItem('keuanganku_premium_data', JSON.stringify(transactions));
-                loadData(); showToast("Transaksi disimpan!", "success"); closeAllModals();
-            } catch (err) {
-                alert("Gagal menyimpan! Memori lokal penuh. Hapus beberapa transaksi lama.");
-            }
-            btn.disabled = false; btn.innerHTML = `<span>Simpan Transaksi</span>`;
-        };
-
-        if (photoFile) compressImage(photoFile, saveTransaction);
-        else saveTransaction(null);
+        try {
+            transactions.push({
+                id: Date.now().toString(), type, amount, description, date: dateStr,
+                timestamp: isToday ? Date.now() : selectedDate.getTime(), createdAt: Date.now(),
+                photo: null
+            });
+            
+            localStorage.setItem('keuanganku_premium_data', JSON.stringify(transactions));
+            loadData(); showToast("Transaksi disimpan!", "success"); closeAllModals();
+        } catch (err) {
+            alert("Gagal menyimpan! Memori lokal penuh. Hapus beberapa transaksi lama.");
+        }
+        btn.disabled = false; btn.innerHTML = `<span>Simpan Transaksi</span>`;
     };
 
     window.handleTargetSubmit = (e) => {
